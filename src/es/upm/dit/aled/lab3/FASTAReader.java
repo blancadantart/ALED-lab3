@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -134,10 +135,21 @@ public class FASTAReader {
 	 * Improved version of the compare method that stops checking elements of the
 	 * pattern when one has been found to be different.
 	 */
+	
 	private boolean compareImproved(byte[] pattern, int position) throws FASTAException {
-		// TODO
-		return false;
+		// SOLUCION
+		if (position + pattern.length > validBytes) {
+			throw new FASTAException("Pattern goes beyond the end of the file.");
+		}
+		boolean match=true;
+		for(int i=0;i<pattern.length;i++)
+			if(pattern[i]!= content[position+i]) {
+				match=false;
+				break;
+			}
+		return match;				
 	}
+	  // SOLUCION
 
 	/*
 	 * Improved version of the compare method that returns the number of bytes in
@@ -148,9 +160,19 @@ public class FASTAReader {
 	 * ones present in the indicated position.
 	 */
 	private int compareNumErrors(byte[] pattern, int position) throws FASTAException {
-		// TODO
-		return -1;
+	// SOLUCION
+		if (position + pattern.length > validBytes) {
+			throw new FASTAException("Pattern goes beyond the end of the file.");
+		}
+		
+		int numeroDeErrores=0;
+		for(int i=0;i<pattern.length;i++)
+			if(pattern[i]!=content[position+i])
+				numeroDeErrores+=1;
+		
+		return numeroDeErrores;
 	}
+	// SOLUCION
 
 	/**
 	 * Implements a linear search to look for the provided pattern in the data
@@ -161,9 +183,20 @@ public class FASTAReader {
 	 * @return All the positions of the first character of every occurrence of the
 	 *         pattern in the data.
 	 */
-	public List<Integer> search(byte[] pattern) {
-		// TODO
-		return null;
+	
+	// Complejidad O(N(tamaño del genoma))*O(M(tamaño del patrón))= O(N*M)
+	public List<Integer> search(byte [] pattern) {
+	// SOLUCION
+		List <Integer> lista = new ArrayList <Integer>();
+		try {
+			for(int i=0;i<validBytes-pattern.length;i++) // Para que no busque el patrón donde ya no cabe la secuencia. 
+				if(compareImproved(pattern,i))
+					lista.add(i);
+		} catch (FASTAException e) {
+			
+		}
+		return lista;
+	// SOLUCION
 	}
 
 	/**
@@ -179,9 +212,18 @@ public class FASTAReader {
 	 *         pattern (with up to 1 errors) in the data.
 	 */
 	public List<Integer> searchSNV(byte[] pattern) {
-		// TODO
-		return null;
+	// SOLUCION
+		List<Integer> solucion=new ArrayList<Integer>();
+		try {
+		for (int i=0;i<pattern.length;i++)
+			if((compareNumErrors(pattern,i)==0) || (compareNumErrors(pattern,i)==1))
+				solucion.add(i);
+		}catch(FASTAException e) {
+			
+		}
+		return solucion;
 	}
+	// SOLUCION
 
 	public static void main(String[] args) {
 		long t1 = System.nanoTime();
