@@ -136,6 +136,7 @@ public class FASTAReader {
 	 * pattern when one has been found to be different.
 	 */
 	
+	// Complejidad O(M(tamaño del patrón))
 	private boolean compareImproved(byte[] pattern, int position) throws FASTAException {
 		// SOLUCION
 		if (position + pattern.length > validBytes) {
@@ -159,6 +160,8 @@ public class FASTAReader {
 	 * Returns the number of characters in the pattern that are different from the
 	 * ones present in the indicated position.
 	 */
+	
+	// Complejidad O(M(tamaño del patrón))
 	private int compareNumErrors(byte[] pattern, int position) throws FASTAException {
 	// SOLUCION
 		if (position + pattern.length > validBytes) {
@@ -211,6 +214,7 @@ public class FASTAReader {
 	 * @return All the positions of the first character of every occurrence of the
 	 *         pattern (with up to 1 errors) in the data.
 	 */
+	// Complejidad: O(M(tamaño del patrón))* O(M(tamaño del patrón)) = O(M*M)
 	public List<Integer> searchSNV(byte[] pattern) {
 	// SOLUCION
 		List<Integer> solucion=new ArrayList<Integer>();
@@ -234,7 +238,7 @@ public class FASTAReader {
 		long t2 = System.nanoTime();
 		List<Integer> posiciones = reader.search(args[1].getBytes());
 		System.out.println("Tiempo de búsqueda: " + (System.nanoTime() - t2));
-		if (posiciones.size() > 0) {
+		if (posiciones.size() > 0) {   
 			for (Integer pos : posiciones)
 				System.out.println("Encontrado " + args[1] + " en " + pos);
 		} else

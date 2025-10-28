@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import es.upm.dit.aled.lab3.FASTAException;
 import es.upm.dit.aled.lab3.FASTAReader;
 
 /**
@@ -67,7 +68,22 @@ public class FASTAReaderSuffixes extends FASTAReader {
 		}
 		System.out.println("-------------------------------------------------------------------------");
 	}
-
+	
+	private boolean compare(byte[] pattern, int position) throws FASTAException {
+		// SOLUCION
+		if (position + pattern.length > validBytes) {
+			throw new FASTAException("Pattern goes beyond the end of the file.");
+		}
+		boolean match=true;
+		for(int i=0;i<pattern.length;i++)
+			if(pattern[i]!= content[position+i]) {
+				match=false;
+				break;
+			}
+		return match;				
+	}
+	  // SOLUCION
+	
 	/**
 	 * Implements a binary search to look for the provided pattern in the data
 	 * array. Returns a List of Integers that point to the initial positions of all
@@ -78,24 +94,88 @@ public class FASTAReaderSuffixes extends FASTAReader {
 	 *         pattern in the data.
 	 */
 	@Override
+	// Complejidad: O(M (tamaño del patrón) * log n(tamaño de los sufijos))
 	public List<Integer> search(byte[] pattern) {
-		// TODO
-		Suffix lo= suffixes[0];
-		Suffix hi= suffixes[pattern.length-1];
+		// SOLUCION. Tengo que recorrer CONTENT e ir comprobando si content[suffix]== pattern
+		int lo= 0;
+		int hi= suffixes.length-1;
 		boolean found=false;
 		int index=0; //Rastrea el carácter actual que se está comparando con el pattern
+		int posicionEncontrada = -1; // Para poder sacar la variable m del bucle while
 		
 		List <Integer> solucion = new ArrayList<Integer>();
-		for(int i=0;i<pattern.length;i++) {
-			int m=suffixes.length/2;
-			Suffix posSuffix=suffixes[m];
 		
-		int
+		// He puesto un break en vez de || (!found) porque no me compilaba bien de esa forma...
+		while(hi-lo>1) {
+			int m=(hi+lo)/2; // No puedo poner suffixes.length/2 porque luego modificas el rango de búsqueda
+			int posSuffix=suffixes[m].suffixIndex;
+			
+			if(index==pattern.length) {
+			   	solucion.add(posSuffix);
+			   	posicionEncontrada=m;
+				found=true;
+				break;
+			}
+			
+			if(pattern[index]==content[posSuffix+index]) {
+				index++;
+		    }
 		
+		    else if(pattern[index]<content[posSuffix+index]) {
+				hi=m--;
+				index=0;
+		    }
+		    
+		    else if(pattern[index]>content[posSuffix+index]) {
+				lo=m++;
+				index=0;
+				
+		   }	
+				
+		}
 		
+		// Método compare (exactamente igual que el de la clase FASTAReader) implementado más arriba
+		// Búsqueda hacia arriba
+		int arriba = posicionEncontrada+1;
+		while(arriba<suffixes.length) {
+			
+			int posSuffix=suffixes[arriba].suffixIndex;
+			try{
+				if(compare(pattern,posSuffix)) {
+				solucion.add(posSuffix);
+				arriba++;
+				}
+				else {
+				 break;
+				}
+				
+			}catch (FASTAException e) {
+				break;
+			}
+		}
 		
+		// Búsqueda abajo
+		int abajo = posicionEncontrada-1;
+		while(abajo>=0){
+			
+			 int posSuffix=suffixes[abajo].suffixIndex;
+			 try {
+			 if(compare(pattern,posSuffix)) {
+					solucion.add(posSuffix);
+					abajo--;
+				}
+			 else{
+				 break;
+			 }
+			 }catch (FASTAException e) {
+				 break;
+			 }
+		 }
+		 
+	
 		return solucion;
-	}
+}
+	// SOLUCION
 
 	public static void main(String[] args) {
 		long t1 = System.nanoTime();
