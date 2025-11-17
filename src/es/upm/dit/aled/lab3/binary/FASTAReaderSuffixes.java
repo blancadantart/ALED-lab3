@@ -98,29 +98,30 @@ public class FASTAReaderSuffixes extends FASTAReader {
 	public List<Integer> search(byte[] pattern) {
 		// SOLUCION. Tengo que recorrer CONTENT e ir comprobando si content[suffix]== pattern
 		int lo= 0;
-		int hi= suffixes.length-1;
+		int hi= suffixes.length;
 		boolean found=false;
 		int index=0; //Rastrea el carácter actual que se está comparando con el pattern
 		int posicionEncontrada = -1; // Para poder sacar la variable m del bucle while
+		int m;
+		int posSuffix;
 		
 		List <Integer> solucion = new ArrayList<Integer>();
 		
-		// He puesto un break en vez de || (!found) porque no me compilaba bien de esa forma...
-		while(hi-lo>1) {
-			int m=(hi+lo)/2; // No puedo poner suffixes.length/2 porque luego modificas el rango de búsqueda
-			int posSuffix=suffixes[m].suffixIndex;
-			
-			if(index==pattern.length) {
-			   	solucion.add(posSuffix);
-			   	posicionEncontrada=m;
-				found=true;
-				break;
-			}
+	
+		while(!found && (hi-lo)>1) {
+			m=(hi+lo)/2; // No puedo poner suffixes.length/2 porque luego modificas el rango de búsqueda
+			posSuffix=suffixes[m].suffixIndex;
 			
 			if(pattern[index]==content[posSuffix+index]) {
 				index++;
 		    }
-		
+			
+			if(index==pattern.length && pattern[index-1]==content[posSuffix+index-1]) {
+			   	solucion.add(posSuffix);
+			   	posicionEncontrada=m;
+				found=true;
+			}
+			
 		    else if(pattern[index]<content[posSuffix+index]) {
 				hi=m--;
 				index=0;
@@ -134,47 +135,55 @@ public class FASTAReaderSuffixes extends FASTAReader {
 				
 		}
 		
-		// Método compare (exactamente igual que el de la clase FASTAReader) implementado más arriba
-		// Búsqueda hacia arriba
-		int arriba = posicionEncontrada+1;
-		while(arriba<suffixes.length) {
-			
-			int posSuffix=suffixes[arriba].suffixIndex;
-			try{
-				if(compare(pattern,posSuffix)) {
-				solucion.add(posSuffix);
-				arriba++;
-				}
-				else {
-				 break;
-				}
+		if(found) {
+			// Búsqueda hacia arriba
+			int arriba = posicionEncontrada+1;
+			while(arriba<suffixes.length) {
 				
-			}catch (FASTAException e) {
-				break;
+				posSuffix=suffixes[arriba].suffixIndex;
+				
+				try {
+					if(compare(pattern,posSuffix)) {
+						solucion.add(posSuffix);
+						arriba++;
+					}
+					else {
+						arriba++;
+						break;
+					}
+				}catch(FASTAException e) {
+					break;
+				}
 			}
+			
+			// Búsqueda abajo
+			int abajo = posicionEncontrada-1;
+			while(abajo>=0) {
+				posSuffix=suffixes[abajo].suffixIndex;
+				
+				try {
+					if(compare(pattern,posSuffix)) {
+						solucion.add(posSuffix);
+						abajo--;
+
+					}
+					else{
+						abajo--;
+						break;
+					}
+					
+				}catch(FASTAException e) {
+					break;
+				}
+						
+				}
+			
 		}
 		
-		// Búsqueda abajo
-		int abajo = posicionEncontrada-1;
-		while(abajo>=0){
-			
-			 int posSuffix=suffixes[abajo].suffixIndex;
-			 try {
-			 if(compare(pattern,posSuffix)) {
-					solucion.add(posSuffix);
-					abajo--;
-				}
-			 else{
-				 break;
-			 }
-			 }catch (FASTAException e) {
-				 break;
-			 }
-		 }
-		 
-	
 		return solucion;
+		
 }
+
 	// SOLUCION
 
 	public static void main(String[] args) {
